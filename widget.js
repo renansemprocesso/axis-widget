@@ -401,7 +401,6 @@ class AxisWidgetClass {
     this.render()
   }
   setFormFields(newFormFields) {
-    console.log({ ...this.formFields, ...newFormFields })
     this.formFields = { ...this.formFields, ...newFormFields }
   }
 
@@ -488,7 +487,7 @@ class AxisWidgetClass {
       .then(response => response.json())
       .then(state => this.setState(state))
       .then(() => this.fetchAuth())
-      .catch(error => console.log(error))
+      .catch(error => console.error(error))
   }
 
   fetchList() {

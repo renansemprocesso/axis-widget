@@ -20,8 +20,11 @@ jobs:
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: ${{ secrets.AWS_REGION }}
 
+    - name: Setup Obfuscate
+      run: npm install && node obfuscate.js
+
     - name: Deploy to S3
-      run: aws s3 cp obfuscate.js s3://${{ secrets.BUCKET_NAME }}
+      run: aws s3 cp obfuscate-prod.js s3://${{ secrets.BUCKET_NAME }}
 
     - name: Invalidate CloudFront Cache
       run: aws cloudfront create-invalidation --distribution-id ${{ secrets.DISTRIBUTION_ID }} --paths "/*"

@@ -339,7 +339,7 @@ class AxisWidgetClass {
       selectedTicket: null,
       selectedTicketOpened: true,
       selectedTicketMessages: [],
-      token: data.token,
+      token: data?.token,
       disclaimer: 'Normalmente responderemos em alguns minutos',
       tags: [],
     }
@@ -355,7 +355,7 @@ class AxisWidgetClass {
     //   throw new Error('Missing required parameters: userName, userEmail, userId, origin, company')
 
     this.componentWillMount()
-    // this.setStyle()
+    this.setStyle()
     this.render()
     if (userEmail && userName && userId) this.fetchAuth()
     if (userEmail && userName && userId) {
@@ -441,6 +441,7 @@ class AxisWidgetClass {
       .then(response => response.json())
       .then(state => {
         this.setState(state)
+        localStorage.setItem('user-widget', JSON.stringify(state))
       })
       .catch(error => {
         console.error(error)

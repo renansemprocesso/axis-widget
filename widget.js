@@ -355,7 +355,7 @@ class AxisWidgetClass {
     //   throw new Error('Missing required parameters: userName, userEmail, userId, origin, company')
 
     this.componentWillMount()
-    this.setStyle()
+    // this.setStyle()
     this.render()
     if (userEmail && userName && userId) this.fetchAuth()
     setTimeout(() => this.fetchList(), 1000)
@@ -371,6 +371,11 @@ class AxisWidgetClass {
     Send: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-send"><path d="M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z"/><path d="m21.854 2.147-10.94 10.939"/></svg>`,
     SquareChat: `<svg xmlns="http://www.w3.org/2000/svg" width="12" height="9" viewBox="0 0 12 9" fill="none"><path d="M1.5 4.5C0.95 4.5 0.5 4.05 0.5 3.5V1C0.5 0.45 0.95 0 1.5 0H5.5C6.05 0 6.5 0.45 6.5 1V3.5C6.5 4.05 6.05 4.5 5.5 4.5H4.5V6L3 4.5H1.5ZM10.5 7.5C11.05 7.5 11.5 7.05 11.5 6.5V4C11.5 3.45 11.05 3 10.5 3H7.5V3.5C7.5 4.6 6.6 5.5 5.5 5.5V6.5C5.5 7.05 5.95 7.5 6.5 7.5H7.5V9L9 7.5H10.5Z" fill="#00695C"/></svg>`,
     Team: `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M11 6.61C11 3.865 8.87 2 6.5 2C4.155 2 2 3.825 2 6.64C1.7 6.81 1.5 7.13 1.5 7.5V8.5C1.5 9.05 1.95 9.5 2.5 9.5H3V6.45C3 4.515 4.565 2.95 6.5 2.95C8.435 2.95 10 4.515 10 6.45V10H6V11H10C10.55 11 11 10.55 11 10V9.39C11.295 9.235 11.5 8.93 11.5 8.57V7.42C11.5 7.07 11.295 6.765 11 6.61Z" fill="white"/><path d="M5 7.5C5.27614 7.5 5.5 7.27614 5.5 7C5.5 6.72386 5.27614 6.5 5 6.5C4.72386 6.5 4.5 6.72386 4.5 7C4.5 7.27614 4.72386 7.5 5 7.5Z" fill="white"/><path d="M8 7.5C8.27614 7.5 8.5 7.27614 8.5 7C8.5 6.72386 8.27614 6.5 8 6.5C7.72386 6.5 7.5 6.72386 7.5 7C7.5 7.27614 7.72386 7.5 8 7.5Z" fill="white"/><path d="M9.49998 6.015C9.38076 5.31207 9.01669 4.67398 8.47221 4.21369C7.92773 3.7534 7.23796 3.50059 6.52498 3.5C5.00998 3.5 3.37998 4.755 3.50998 6.725C4.12667 6.47288 4.67134 6.07199 5.09536 5.55811C5.51938 5.04422 5.80956 4.43334 5.93998 3.78C6.59498 5.095 7.93998 6 9.49998 6.015Z" fill="white"/></svg>`,
+  }
+
+  emailValidation(email) {
+    const regexEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    return regexEmail.test(email)
   }
 
   componentWillMount() {
@@ -406,8 +411,13 @@ class AxisWidgetClass {
 
   setStyle() {
     const css = `
-        :root{--axis-w-icon-size:48px;--axis-w-primary-color:#009688;--Brand-Main-super-light:#80cbc3;--Brand-Main-super-dark:#00695c;--axis-w-light-color:rgba(202,244,247,1);--axis-w-b0-color:#fff;--axis-w-b1-color:#f8f8f8;--axis-w-b2-color:#ddd;--axis-w-b3-color:#666;--axis-text-disabled:#bfbfbf;--axis-shadow:0 5px 20px rgba(35,35,35,.35);--axis-gradient:linear-gradient(135deg,rgba(8,84,77,1) 13%,rgba(0,150,136,1) 52%,rgba(202,244,247,1) 100%);--axis-header-bg:#00695c}#axis-widget-root{position:fixed;right:20px;bottom:20px;z-index:999;display:flex;flex-direction:column;align-items:flex-end;justify-content:flex-end;gap:16px}#axis-widget-float-icon{all:unset;width:var(--axis-w-icon-size);height:var(--axis-w-icon-size);border-radius:50%;background-color:var(--axis-w-primary-color);color:var(--axis-w-b0-color);display:flex;justify-content:center;align-items:center;transition:0.1s;cursor:pointer}#axis-widget-float-icon:hover{transform:scale(1.1)}#axis-widget-chat-wrapper{width:400px;max-width:90dvw;border-radius:16px;background-color:var(--axis-w-b0-color);display:none;overflow:hidden;box-shadow:var(--axis-shadow)}#axis-widget-chat-wrapper[data-visible='true']{display:flex;height:500px;flex-direction:column;justify-content:space-between}#axis-widget-chat>footer{display:flex;justify-content:center;gap:32px;padding:16px 32px;background-color:var(--axis-w-b1-color)}#axis-widget-chat>footer>button{all:unset;cursor:pointer;display:flex;align-items:center;gap:8px;flex-direction:column;font-size:12px;transition:all ease 0.1s}#axis-widget-chat>footer>button:hover{color:var(--axis-w-primary-color)}#axis-widget-chat>footer>button[data-enable='true']{color:var(--axis-w-primary-color)}.axis-widget-chat-header-welcome{display:flex;align-items:flex-start;padding:16px;gap:16px;font-size:24px;flex-direction:column;font-weight:700;background:var(--Brand-Main-super-dark);color:var(--axis-w-b0-color)}.axis-widget-chat-header-welcome-flags{width:100%;display:flex;align-items:center;justify-content:center;gap:8px}.axis-widget-chat-header-welcome-flags span{display:flex;align-items:center;gap:4px;font-size:10px;font-weight:400;line-height:150%;letter-spacing:.4px;padding:4px 12px;border-radius:50px;background-color:var(--Brand-Main-super-light);color:#00695c}.axis-widget-chat-header-welcome-flags span:nth-child(2){background-color:#009688;color:var(--axis-w-b0-color)}.axis-widget-chat-header-welcome-title{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;width:100%;font-size:20px;font-weight:700;line-height:120%}.axis-widget-chat-header-welcome-title span:nth-child(1){font-size:16px;font-weight:400;line-height:150%;letter-spacing:.5px}.axis-widget-chat-header-welcome hr{width:100%;border:1px solid #007969;margin:0}.axis-widget-chat-header-welcome-infos{width:100%;font-size:12px;font-weight:500;line-height:150%;letter-spacing:-.04px;display:flex;flex-direction:column;align-items:center;justify-content:center}.axis-widget-chat-header-welcome-infos small{font-size:12px;font-weight:400;color:var(--axis-text-disabled)}.axis-widget-chat-header{background:var(--axis-header-bg);color:var(--axis-w-b0-color);padding:16px;display:flex;place-items:center;justify-content:space-between;font-size:14px;font-weight:600;gap:8px}.axis-widget-chat-header h2{font-size:14px;font-weight:600;white-space:nowrap;text-overflow:ellipsis;overflow:hidden}.axis-widget-chat-header div{display:flex;align-items:center;gap:8px;overflow:hidden}.axis-widget-chat-header button{width:20px;height:20px;aspect-ratio:1/1;border-radius:50px;background-color:var(--Brand-Main-super-light);display:flex;align-items:center;justify-content:center;box-sizing:border-box;cursor:pointer}.axis-widget-chat-header button svg{width:16px;height:16px;color:#1b1b1b}.axis-widget-chat-header-status{background-color:#81d5ff;color:#3b3b3b;font-size:10px;font-weight:400;line-height:150%;letter-spacing:.4px;padding:2px 8px;border-radius:50px}.axis-widget-chat-header-status[data-type='closed']{background-color:var(--axis-w-b3-color);color:var(--axis-text-disabled)}.axis-widget-ticket-list{flex-grow:1;overflow-y:scroll;overflow-x:hidden;display:flex;flex-direction:column;align-items:center;gap:8px;padding:0 8px 16px 16px;font-size:14px}.axis-widget-ticket-list::-webkit-scrollbar,.axis-widget-chat-messages::-webkit-scrollbar{display:block;background:transparent;width:16px}.axis-widget-ticket-list::-webkit-scrollbar-thumb,.axis-widget-chat-messages::-webkit-scrollbar-thumb{border:5px solid transparent;background-clip:padding-box;border-radius:9999px;background-color:var(--axis-w-b2-color)}.axis-widget-ticket-list-message{color:var(--axis-w-b3-color);flex:1;display:flex;align-items:center}.axis-widget-ticket-list-title{font-size:14px;font-weight:600;width:100%;position:sticky;top:0;background:var(--axis-w-b0-color);margin-top:24px;z-index:1;padding:8px 0 4px 0;box-shadow:0 5px 5px #fff}.axis-widget-ticket-card{all:unset;display:flex;gap:16px;align-items:center;padding:8px 16px;border-radius:4px;font-size:14px;cursor:pointer;background-color:#fafafa;border-radius:8px;border:1px solid #f2f2f2;width:100%;box-sizing:border-box}.axis-widget-ticket-card p{display:flex;flex-direction:column;align-items:flex-start;overflow:hidden;width:100%;overflow:hidden}.axis-widget-ticket-card p strong{font-size:14px;font-weight:600;color:#1c1c1c;white-space:nowrap;text-overflow:ellipsis;max-width:100%;overflow:hidden}.axis-widget-ticket-card p span{opacity:.75;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;width:100%;color:#757474}.axis-widget-ticket-card-icon-content{background-color:#009688;padding:3px;aspect-ratio:1/1;border-radius:50px;width:20px;height:20px;display:flex;align-items:center;justify-content:center}.axis-widget-ticket-card-icon-content svg{width:16px;height:16px;color:var(--axis-w-b0-color)}.axis-widget-ticket-card[data-opened='false']{opacity:.5;color:var(--axis-w-b3-color)}.axis-widget-ticket-card[data-opened='false'] .axis-widget-ticket-card-icon-content{background-color:var(--axis-text-disabled)}.axis-widget-chat-messages{flex-grow:1;overflow-y:scroll;overflow-x:hidden;display:flex;flex-direction:column;gap:8px;padding:16px 16px 16px 32px}.axis-widget-chat-messages small{display:flex;justify-content:flex-end;align-items:flex-end;font-size:10px;gap:8px}.axis-widget-chat-messages small svg{width:12px;height:12px;color:var(--axis-w-primary-color);animation:spin 1s linear infinite}.date-group{display:flex;flex-direction:column;gap:8px}.date-group-header{background-color:var(--axis-w-b2-color);padding:8px 16px;border-radius:8px;margin-bottom:8px;width:fit-content;margin:8px auto 0 auto;font-size:10px}.axis-widget-chat-message-container{display:flex;flex-direction:column}.axis-widget-chat-message{display:flex;flex-direction:column;align-self:flex-end;background-color:var(--axis-w-light-color);padding:8px 16px;border-radius:8px;width:fit-content;margin-left:auto}.axis-widget-chat-message strong{align-self:flex-end;font-size:12px;font-weight:500;color:var(--axis-w-primary-color)}.axis-widget-chat-message-container small{display:flex;flex-direction:column;align-items:flex-end;font-size:10px}.axis-widget-chat-message p{font-size:14px;color:var(--axis-w-b3-color)}.axis-widget-chat-message[data-from-user='false']{background-color:var(--axis-w-b2-color);color:var(--axis-w-b3-color);align-self:flex-start;margin-left:0}.axis-widget-chat-message[data-from-user='false'] strong,.axis-widget-chat-message-container[data-from-user='false'] small{align-self:flex-start;align-items:flex-start}.axis-widget-chat-message-button{display:flex;align-items:flex-start;padding:4px;gap:4px;font-size:14px;background:none;color:var(--axis-w-primary-color);border-radius:4px;cursor:pointer}.axis-widget-chat-message-button svg{width:16px;height:16px}.axis-widget-chat-message-button span{color:var(--axis-w-b3-color)}.axis-widget-chat-message-button span svg{animation:spin linear 1s}.axis-widget-chat-actions{display:flex;gap:16px;align-items:center;padding:8px 16px;background-color:var(--axis-w-b0-color);border:1px solid var(--axis-w-b2-color);font-size:14px}.axis-widget-chat-actions:empty{display:none}.axis-widget-chat-actions input{font-size:14px;font-weight:400;line-height:150%;letter-spacing:.4px;box-sizing:border-box;border:none;width:100%}.axis-widget-chat-actions button{padding:8px;border-radius:4px}.axis-widget-chat-actions button:hover{background-color:var(--Brand-Main-super-light)}.axis-widget-chat-actions button:hover svg{color:var(--Brand-Main-super-dark)}.axis-widget-chat-actions-file-button{all:unset;cursor:pointer;display:flex;align-items:center;gap:8px;font-size:14px;border-radius:80px;color:var(--axis-w-b3-color);transition:all ease 0.1s}.axis-widget-chat-actions-file-button svg{width:16px;height:16px;color:var(--Brand-Main-super-light)}.axis-widget-chat-actions-send-button{all:unset;cursor:pointer;display:flex;align-items:center;color:var(--axis-w-b3-color);transition:all ease 0.1s}.axis-widget-chat-actions-send-button svg{width:16px;height:16px;color:var(--axis-w-primary-color)}.axis-widget-form{display:flex;flex-direction:column;padding:30px;gap:20px;height:100%}.axis-widget-form label{display:flex;flex-direction:column;gap:4px;width:100%;font-size:10px;position:relative;border:1px solid #b5b5b5;padding:10px;box-sizing:border-box}.axis-widget-form label span{position:absolute;padding:0 4px;top:-7px;left:10px;background-color:var(--axis-w-b0-color)}.axis-widget-form input,.axis-widget-form select{border:none;color:#6d6d6d}.axis-widget-form-footer{display:flex;align-items:center;justify-content:space-between;gap:20px;width:100%;margin-top:auto}.axis-widget-form-footer button{height:100%;font-size:10px;font-weight:400;line-height:150%;letter-spacing:.4px;background:none;cursor:pointer;transition:all ease 0.3s}.axis-widget-form-footer button[data-type='submit']{display:flex;align-items:center;justify-content:center;gap:16px;padding:8px;background-color:var(--axis-w-primary-color);color:var(--axis-w-b0-color);border-radius:4px;font-size:12px;font-weight:500;line-height:100%;cursor:pointer;margin-left:auto}.axis-widget-form button:disabled{background-color:var(--axis-w-b3-color);cursor:default}@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
-        `
+        .axis-widget-chat-header h2,.axis-widget-ticket-card p span,.axis-widget-ticket-card p strong{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}:root{--axis-w-icon-size:48px;--axis-w-primary-color:#009688;--Brand-Main-super-light:#80cbc3;--Brand-Main-super-dark:#00695c;--axis-w-light-color:rgba(202, 244, 247, 1);--axis-w-b0-color:#ffffff;--axis-w-b1-color:#f8f8f8;--axis-w-b2-color:#dddddd;--axis-w-b3-color:#666666;--axis-text-disabled:#bfbfbf;--axis-shadow:0 5px 20px rgba(35, 35, 35, 0.35);--axis-gradient:linear-gradient(
+    135deg,
+    rgba(8, 84, 77, 1) 13%,
+    rgba(0, 150, 136, 1) 52%,
+    rgba(202, 244, 247, 1) 100%
+  );--axis-header-bg:#00695c}#axis-widget-root{position:fixed;right:20px;bottom:20px;z-index:999;display:flex;flex-direction:column;align-items:flex-end;justify-content:flex-end;gap:16px}#axis-widget-float-icon{all:unset;width:var(--axis-w-icon-size);height:var(--axis-w-icon-size);border-radius:50%;background-color:var(--axis-w-primary-color);color:var(--axis-w-b0-color);display:flex;justify-content:center;align-items:center;transition:.1s;cursor:pointer}#axis-widget-float-icon:hover{transform:scale(1.1)}#axis-widget-chat-wrapper{width:400px;max-width:90dvw;border-radius:16px;background-color:var(--axis-w-b0-color);display:none;overflow:hidden;box-shadow:var(--axis-shadow)}#axis-widget-chat-wrapper[data-visible=true]{display:flex;height:500px;flex-direction:column;justify-content:space-between}#axis-widget-chat>footer{display:flex;justify-content:center;gap:32px;padding:16px 32px;background-color:var(--axis-w-b1-color)}#axis-widget-chat>footer>button{all:unset;cursor:pointer;display:flex;align-items:center;gap:8px;flex-direction:column;font-size:12px;transition:.1s}#axis-widget-chat>footer>button:hover,#axis-widget-chat>footer>button[data-enable=true]{color:var(--axis-w-primary-color)}.axis-widget-chat-header-welcome{display:flex;align-items:flex-start;padding:16px;gap:16px;font-size:24px;flex-direction:column;font-weight:700;background:var(--Brand-Main-super-dark);color:var(--axis-w-b0-color)}.axis-widget-chat-header-welcome-flags{width:100%;display:flex;align-items:center;justify-content:center;gap:8px}.axis-widget-chat-header-welcome-flags span{display:flex;align-items:center;gap:4px;font-size:10px;font-weight:400;line-height:150%;letter-spacing:.4px;padding:4px 12px;border-radius:50px;background-color:var(--Brand-Main-super-light);color:#00695c}.axis-widget-chat-header-welcome-flags span:nth-child(2){background-color:#009688;color:var(--axis-w-b0-color)}.axis-widget-chat-actions button:hover,.axis-widget-chat-header button{background-color:var(--Brand-Main-super-light)}.axis-widget-chat-header-welcome-title{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;width:100%;font-size:20px;font-weight:700;line-height:120%}.axis-widget-chat-header-welcome-title span:first-child{font-size:16px;font-weight:400;line-height:150%;letter-spacing:.5px}.axis-widget-chat-header-welcome hr{width:100%;border:1px solid #007969;margin:0}.axis-widget-chat-header-welcome-infos{width:100%;font-size:12px;font-weight:500;line-height:150%;letter-spacing:-.04px;display:flex;flex-direction:column;align-items:center;justify-content:center}.axis-widget-chat-header-welcome-infos small{font-size:12px;font-weight:400;color:var(--axis-text-disabled)}.axis-widget-chat-header{background:var(--axis-header-bg);color:var(--axis-w-b0-color);padding:16px;display:flex;place-items:center;justify-content:space-between;font-size:14px;font-weight:600;gap:8px}.axis-widget-chat-header h2{font-size:14px;font-weight:600}.axis-widget-chat-header div{display:flex;align-items:center;gap:8px;overflow:hidden}.axis-widget-chat-header button{width:20px;height:20px;aspect-ratio:1/1;border-radius:50px;display:flex;align-items:center;justify-content:center;box-sizing:border-box;cursor:pointer}.axis-widget-chat-actions:empty,.axis-widget-chat-header button:disabled{display:none}.axis-widget-chat-header button svg{width:16px;height:16px;color:#1b1b1b}.axis-widget-chat-header-status{background-color:#81d5ff;color:#3b3b3b;font-size:10px;font-weight:400;line-height:150%;letter-spacing:.4px;padding:2px 8px;border-radius:50px}.axis-widget-chat-header-status[data-type=closed]{background-color:var(--axis-w-b3-color);color:var(--axis-text-disabled)}.axis-widget-ticket-list{flex-grow:1;overflow-y:scroll;overflow-x:hidden;display:flex;flex-direction:column;align-items:center;gap:8px;padding:0 8px 16px 16px;font-size:14px}.axis-widget-chat-messages::-webkit-scrollbar,.axis-widget-ticket-list::-webkit-scrollbar{display:block;background:0 0;width:16px}.axis-widget-chat-messages::-webkit-scrollbar-thumb,.axis-widget-ticket-list::-webkit-scrollbar-thumb{border:5px solid transparent;background-clip:padding-box;border-radius:9999px;background-color:var(--axis-w-b2-color)}.axis-widget-ticket-list-message{color:var(--axis-w-b3-color);flex:1;display:flex;align-items:center}.axis-widget-ticket-list-title{font-size:14px;font-weight:600;width:100%;position:sticky;top:0;background:var(--axis-w-b0-color);margin-top:24px;z-index:1;padding:8px 0 4px;box-shadow:0 5px 5px #fff}.axis-widget-ticket-card{all:unset;display:flex;gap:16px;align-items:center;padding:8px 16px;border-radius:8px;font-size:14px;cursor:pointer;background-color:#fafafa;border:1px solid #f2f2f2;width:100%;box-sizing:border-box}.axis-widget-ticket-card p{display:flex;flex-direction:column;align-items:flex-start;width:100%;overflow:hidden}.axis-widget-ticket-card p strong{font-size:14px;font-weight:600;color:#1c1c1c;max-width:100%}.axis-widget-ticket-card p span{opacity:.75;font-size:12px;width:100%;color:#757474}.axis-widget-ticket-card-icon-content{background-color:#009688;padding:3px;aspect-ratio:1/1;border-radius:50px;width:20px;height:20px;display:flex;align-items:center;justify-content:center}.axis-widget-ticket-card-icon-content svg{width:16px;height:16px;color:var(--axis-w-b0-color)}.axis-widget-ticket-card[data-opened=false]{opacity:.5;color:var(--axis-w-b3-color)}.axis-widget-ticket-card[data-opened=false] .axis-widget-ticket-card-icon-content{background-color:var(--axis-text-disabled)}.axis-widget-chat-messages{flex-grow:1;overflow-y:scroll;overflow-x:hidden;display:flex;flex-direction:column;gap:8px;padding:16px 16px 16px 32px}.axis-widget-chat-message,.date-group-header{padding:8px 16px;border-radius:8px;width:fit-content}.axis-widget-chat-messages small{display:flex;justify-content:flex-end;align-items:flex-end;font-size:10px;gap:8px}.axis-widget-chat-messages small svg{width:12px;height:12px;color:var(--axis-w-primary-color);animation:1s linear infinite spin}.date-group{display:flex;flex-direction:column;gap:8px}.axis-widget-chat-message,.axis-widget-chat-message-container{flex-direction:column;display:flex}.date-group-header{background-color:var(--axis-w-b2-color);margin:8px auto 0;font-size:10px}.axis-widget-chat-message{align-self:flex-end;background-color:var(--axis-w-light-color);margin-left:auto}.axis-widget-chat-message strong{align-self:flex-end;font-size:12px;font-weight:500;color:var(--axis-w-primary-color)}.axis-widget-chat-message-container small{display:flex;flex-direction:column;align-items:flex-end;font-size:10px}.axis-widget-chat-message p{font-size:14px;color:var(--axis-w-b3-color)}.axis-widget-chat-message[data-from-user=false]{background-color:var(--axis-w-b2-color);color:var(--axis-w-b3-color);align-self:flex-start;margin-left:0}.axis-widget-chat-message-container[data-from-user=false] small,.axis-widget-chat-message[data-from-user=false] strong{align-self:flex-start;align-items:flex-start}.axis-widget-chat-message-button{display:flex;align-items:flex-start;padding:4px;gap:4px;font-size:14px;background:0 0;color:var(--axis-w-primary-color);border-radius:4px;cursor:pointer}.axis-widget-chat-message-button svg{width:16px;height:16px}.axis-widget-chat-message-button span{color:var(--axis-w-b3-color)}.axis-widget-chat-message-button span svg{animation:1s linear spin}.axis-widget-chat-actions{display:flex;gap:16px;align-items:center;padding:8px 16px;background-color:var(--axis-w-b0-color);border:1px solid var(--axis-w-b2-color);font-size:14px}.axis-widget-chat-actions input{font-size:14px;font-weight:400;line-height:150%;letter-spacing:.4px;box-sizing:border-box;border:none;width:100%}.axis-widget-chat-actions button{padding:8px;border-radius:4px}.axis-widget-chat-actions button:hover svg{color:var(--Brand-Main-super-dark)}.axis-widget-chat-actions-file-button{all:unset;cursor:pointer;display:flex;align-items:center;gap:8px;font-size:14px;border-radius:80px;color:var(--axis-w-b3-color);transition:.1s}.axis-widget-chat-actions-file-button svg{width:16px;height:16px;color:var(--Brand-Main-super-light)}.axis-widget-chat-actions-send-button{all:unset;cursor:pointer;display:flex;align-items:center;color:var(--axis-w-b3-color);transition:.1s}.axis-widget-chat-actions-send-button svg{width:16px;height:16px;color:var(--axis-w-primary-color)}.axis-widget-form{display:flex;flex-direction:column;padding:16px;gap:20px;height:100%}.axis-widget-form label{display:flex;flex-direction:column;gap:4px;width:100%;font-size:10px;position:relative;border:1px solid #b5b5b5;padding:10px;box-sizing:border-box}.axis-widget-form label span{position:absolute;padding:0 4px;top:-7px;left:10px;background-color:var(--axis-w-b0-color)}.axis-widget-form input,.axis-widget-form select{border:none;color:#6d6d6d}.axis-widget-form-footer{display:flex;align-items:center;justify-content:space-between;gap:20px;width:100%;margin-top:auto}.axis-widget-form-footer button{height:100%;font-size:10px;font-weight:400;line-height:150%;letter-spacing:.4px;background:0 0;cursor:pointer;transition:.3s}.axis-widget-form-footer button[data-type=submit]{display:flex;align-items:center;justify-content:center;gap:16px;padding:8px;background-color:var(--axis-w-primary-color);color:var(--axis-w-b0-color);border-radius:4px;font-size:12px;font-weight:500;line-height:100%;cursor:pointer;margin-left:auto}.axis-widget-form button:disabled{background-color:var(--axis-w-b3-color);cursor:default}@keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+    `
     const style = document.createElement('style')
     style.innerHTML = css
     document.head.appendChild(style)
@@ -471,23 +481,11 @@ class AxisWidgetClass {
   }
 
   fetchValidateAuth() {
-    const body = JSON.stringify({
-      userName: this.formFields.userName,
-      userEmail: this.formFields.userEmail,
-    })
+    this.user.name = this.formFields.userName
+    this.user.email = this.formFields.userEmail
 
-    fetch(`${this.baseUrl}/tickets/create`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        authorization: this.state.token,
-      },
-      body,
-    })
-      .then(response => response.json())
-      .then(state => this.setState(state))
-      .then(() => this.fetchAuth())
-      .catch(error => console.error(error))
+    this.fetchAuth()
+    this.setState({ currentTab: 'home' })
   }
 
   fetchList() {
@@ -599,23 +597,19 @@ class AxisWidgetClass {
         </main>
       `
   }
-  ChatHeader(title = 'Ticket') {
+  ChatHeader() {
     return `<header class="axis-widget-chat-header">
         <div>
-            <button type="button" onclick="_axisWidget.setState({currentTab:'home'})">${
-              this.Icon.ChevronLeft
-            }</button>
-            <span>${title} ${this.state.selectedTicket ?? ''}</span>
+            <button 
+              type="button" 
+              onclick="_axisWidget.setState({currentTab:'home'})" 
+              ${this.state.currentTab === 'auth-form' ? 'disabled' : ''}>
+              ${this.Icon.ChevronLeft}
+            </button>
+            <span>${this.state.currentTab === 'auth-form' ? 'Autenticação' : 'Novo ticket'} ${
+      this.state.selectedTicket ?? ''
+    }</span>
         </div>
-        ${
-          this.state.currentTab === 'chat'
-            ? `<span class="axis-widget-chat-header-status" data-type="${
-                this.state.selectedTicketOpened ? 'opened' : 'closed'
-              }">
-            ${this.state.selectedTicketOpened ? 'Aberto' : 'Fechado'}
-        </span>`
-            : ''
-        }
       </header>`
   }
   ChatMessage(message) {
@@ -660,6 +654,25 @@ class AxisWidgetClass {
     if (!input || !select || !button) return
 
     if (input.value.length < 3 || select.value === 'null' || select.value === '') {
+      button.disabled = true
+    } else {
+      button.disabled = false
+    }
+  }
+
+  updateAuthForm() {
+    const name = document.querySelector("input[name='userName']")
+    const email = document.querySelector("input[name='userEmail']")
+    const button = document.querySelector('.axis-widget-submit-auth-button')
+
+    const isValidEmail = this.emailValidation(email.value)
+
+    if (!name || !email || !button) {
+      console.log({ name, email, button })
+      return null
+    }
+
+    if (name.value.length < 3 || !isValidEmail) {
       button.disabled = true
     } else {
       button.disabled = false
@@ -719,7 +732,7 @@ class AxisWidgetClass {
                     onkeyup="_axisWidget.setFormFields({userName: this.value})"
                     maxlength="140"
                     name="userName"
-                    oninput="_axisWidget.updateNewTicketButton()" 
+                    oninput="_axisWidget.updateAuthForm()" 
                 />
             </label>
             <label>
@@ -730,7 +743,7 @@ class AxisWidgetClass {
                     onkeyup="_axisWidget.setFormFields({userEmail: this.value})"
                     maxlength="140"
                     name="userEmail"
-                    oninput="_axisWidget.updateNewTicketButton()" 
+                    oninput="_axisWidget.updateAuthForm()" 
                 />
             </label>
             

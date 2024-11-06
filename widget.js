@@ -42,6 +42,8 @@ class AxisWidgetChat {
         this.renderChatMessages()
         this.renderChatHeaderData()
         this.renderChatActions()
+        this.scrollChatToBottom()
+        document.getElementById('chat-input').focus()
       })
       .catch(error => {
         this.isLoading = false
@@ -291,7 +293,7 @@ class AxisWidgetChat {
                 <button class="axis-widget-chat-actions-file-button" type="button" onclick="document.getElementById('file-input').click()">
                     ${this.Icon.Paperclip}
                 </button>
-                <input id="chat-input" placeholder="Escreva sua mensagem" autocomplete="off" onkeypress="if(event.key === 'Enter') _axisWidgetChat.sendMessage()" />
+                <input id="chat-input" placeholder="Escreva sua mensagem" autocomplete="off" onkeypress="if(event.key === 'Enter') _axisWidgetChat.sendMessage()"  autofocus/>
                 <input type="file" id="file-input" style="display: none;" onchange="_axisWidgetChat.sendMessage()" />
                 <button class="axis-widget-chat-actions-send-button" type="button" onclick="_axisWidgetChat.sendMessage()">${this.Icon.Send}</button>
             `

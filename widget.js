@@ -196,7 +196,7 @@ class AxisWidgetChat {
       const message = messageInput.value
       const file = fileInput.files[0]
 
-      if (!message && !file) return
+      if ((!message || message.length === 0) && !file) return
 
       const formData = new FormData()
       formData.append('ticketId', this.ticketId)
@@ -293,7 +293,7 @@ class AxisWidgetChat {
                 <button class="axis-widget-chat-actions-file-button" type="button" onclick="document.getElementById('file-input').click()">
                     ${this.Icon.Paperclip}
                 </button>
-                <input id="chat-input" placeholder="Escreva sua mensagem" autocomplete="off" onkeypress="if(event.key === 'Enter') _axisWidgetChat.sendMessage()"  autofocus/>
+                <input id="chat-input" placeholder="Escreva sua mensagem" autocomplete="off"  autofocus/>
                 <input type="file" id="file-input" style="display: none;" onchange="_axisWidgetChat.sendMessage()" />
                 <button class="axis-widget-chat-actions-send-button" type="button" onclick="_axisWidgetChat.sendMessage()">${this.Icon.Send}</button>
             `

@@ -509,7 +509,7 @@ class AxisWidgetClass {
     })
       .then(response => response.json())
       .then(json => {
-        this.setState({ tickets: json, isLoading: false })
+        this.setState({ tickets: json.list, isLoading: false })
       })
       .then(() => this.refreshTicketList())
       .catch(error => {

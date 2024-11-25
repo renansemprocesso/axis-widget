@@ -1,5 +1,6 @@
 class AxisWidgetChat {
   constructor(ticketId, token, userData) {
+    // this.baseUrl = 'https://axis-server-dev.semprocesso.com.br'
     this.baseUrl = 'https://axis-server.semprocesso.com.br'
     this.ticketId = ticketId
     this.ticketData = {}
@@ -23,6 +24,7 @@ class AxisWidgetChat {
     Paperclip: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-paperclip"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>`,
     File: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/></svg>`,
     Loading: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-loader-circle"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>`,
+    Maximize: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-maximize-2"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" x2="14" y1="3" y2="10"/><line x1="3" x2="10" y1="21" y2="14"/></svg>`,
   }
 
   async fetchTicketData() {
@@ -99,6 +101,37 @@ class AxisWidgetChat {
     }
   }
 
+  async fetchSendQuestion(question) {
+    try {
+      this.isLoading = true
+      this.renderChatMessages()
+
+      const formData = new FormData()
+      formData.append('ticketId', this.ticketId)
+      formData.append('username', this.userData.name)
+      formData.append('userId', this.userData.id)
+      formData.append('text', question.title)
+
+      await this.fetchAddComment(formData)
+      setTimeout(async () => await this.fetchTicketData(), 1000)
+
+      this.isLoading = false
+      const responseFormData = new FormData()
+      responseFormData.append('ticketId', this.ticketId)
+      responseFormData.append('username', this.userData.name)
+      responseFormData.append('userId', this.userData.id)
+      responseFormData.append('text', question.description)
+
+      await this.fetchAddComment(responseFormData)
+      setTimeout(async () => await this.fetchTicketData(), 1000)
+    } catch (error) {
+      console.error(error)
+    } finally {
+      this.isLoading = false
+      setTimeout(this.renderChatMessages, 100)
+    }
+  }
+
   ChatMessage(message, showUserName = true, showDate = true) {
     const fromUser = message.userType === 'user'
     return `
@@ -138,7 +171,7 @@ class AxisWidgetChat {
   renderChatMessages() {
     const chatMessages = document.querySelector('.axis-widget-chat-messages')
 
-    const orderedMessages = this.ticketData.messages.reduce((acc, message) => {
+    const orderedMessages = this.ticketData?.messages.reduce((acc, message) => {
       const messageDate = new Date(message.date).toLocaleDateString('pt-BR')
 
       // Verificar se a data já existe no array acumulador
@@ -156,29 +189,57 @@ class AxisWidgetChat {
       return acc
     }, [])
 
-    chatMessages.innerHTML = `${orderedMessages
-      .map(group => {
-        return `
-                    <div class="date-group">
-                        <div class="date-group-header">${group.date}</div>
-                        ${group.messages
-                          .map((msg, i) => {
-                            const showUserName =
-                              msg.userId !== group.messages[i - 1]?.userId &&
-                              msg.userId !== this.userData.id
-                            const showDate =
-                              msg.userId !== group.messages[i + 1]?.userId ||
-                              i === group.messages.length - 1
-                            return this.ChatMessage(msg, showUserName, showDate)
-                          })
-                          .join('')}
-                        
-                    </div>
-                `
-      })
-      .join('')}
-            ${this.isLoading ? `<small>Enviando mensagem...${this.Icon.Loading}</small>` : ''}
+    if (chatMessages) {
+      chatMessages.innerHTML = `${
+        orderedMessages
+          ? orderedMessages
+              .map(group => {
+                return `
+                  <div class="date-group">
+                      <div class="date-group-header">${group.date}</div>
+                      ${group.messages
+                        .map((msg, i) => {
+                          const showUserName =
+                            msg.userId !== group.messages[i - 1]?.userId &&
+                            msg.userId !== this.userData.id
+                          const showDate =
+                            msg.userId !== group.messages[i + 1]?.userId ||
+                            i === group.messages.length - 1
+                          return this.ChatMessage(msg, showUserName, showDate)
+                        })
+                        .join('')}
+                  </div>
+              `
+              })
+              .join('')
+          : ''
+      }
+          ${this.isLoading ? `<small>Enviando mensagem...${this.Icon.Loading}</small>` : ''}
+          ${
+            this.ticketData.FAQ?.length > 0
+              ? `
+            <div class="questions-container">
+              ${this.ticketData.FAQ.map(question => {
+                return `<button 
+                          class="question-button" 
+                          onclick="_axisWidgetChat.fetchSendQuestion(${JSON.stringify(question)})">
+                          ${question.title}
+                        </button>`
+              }).join('')}
+            </div>
             `
+              : ''
+          }
+          `
+    }
+    // Adicionar eventos de clique após renderizar os botões
+    const questionButtons = chatMessages.querySelectorAll('.question-button')
+    questionButtons.forEach((button, index) => {
+      button.addEventListener('click', () => {
+        const question = this.ticketData.FAQ[index]
+        this.fetchSendQuestion(question)
+      })
+    })
   }
 
   scrollChatToBottom() {
@@ -278,13 +339,17 @@ class AxisWidgetChat {
     return `
             <header class="axis-widget-chat-header">
                 <div>
-                <button type="button" onclick="_axisWidget.setState({currentTab:'home'})">${this.Icon.ChevronLeft}</button>
-                    <h2></h2>
+                  <button type="button" onclick="_axisWidget.setState({currentTab:'home'})">${this.Icon.ChevronLeft}</button>
+                  <h2></h2>
                 </div>
-                <span class="axis-widget-chat-header-status"></span>
-            </header>
-        `
+
+                <div>
+                  <span class="axis-widget-chat-header-status"></span>
+                  </div>
+                  </header>
+                  `
   }
+  // <button class="axis-widget-chat-header-resize" onclick="_axisWidget.resizeWidget()">${this.Icon.Maximize}</button>
 
   renderChatActions() {
     const chatActions = document.querySelector('.axis-widget-chat-actions')
@@ -323,6 +388,7 @@ class AxisWidgetChat {
 class AxisWidgetClass {
   constructor({ userName, userEmail, userId, origin, company, data, isOpen }) {
     this.baseUrl = 'https://axis-server.semprocesso.com.br'
+    // this.baseUrl = 'https://axis-server-dev.semprocesso.com.br'
     this.user = {
       name: userName,
       email: userEmail,
@@ -334,6 +400,7 @@ class AxisWidgetClass {
 
     this.state = {
       isOpen,
+      isBigger: false,
       // currentTab:'auth-form', // home, chat, new, auth-form
       currentTab: !userId || !userEmail || !userName ? 'auth-form' : 'home', // home, chat, new, auth-form
       isLoading: true,
@@ -360,7 +427,7 @@ class AxisWidgetClass {
     this.setStyle()
     this.render()
     if (userEmail && userName && userId) this.fetchAuth()
-    if (userEmail && userName && userId) {
+    if (userEmail && userName && userId && this.state.token) {
       setTimeout(() => this.fetchList(), 1000)
     }
   }
@@ -391,6 +458,7 @@ class AxisWidgetClass {
     widget.id = 'axis-widget-root'
     widgetChatWrapper.id = 'axis-widget-chat-wrapper'
     widgetChatWrapper.setAttribute('data-visible', this.state.isOpen)
+    widgetChatWrapper.setAttribute('data-bigger', this.state.isBigger)
 
     widgetFloatIcon.id = 'axis-widget-float-icon'
     const setIcon = () => (this.state.isOpen ? this.Icon.ChevronDown : this.Icon.Chat)
@@ -415,12 +483,12 @@ class AxisWidgetClass {
 
   setStyle() {
     const css = `
-      .axis-widget-chat-header h2,.axis-widget-ticket-card p span,.axis-widget-ticket-card p strong{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}:root{--axis-w-icon-size:48px;--axis-w-primary-color:#009688;--Brand-Main-super-light:#80cbc3;--Brand-Main-super-dark:#00695c;--axis-w-light-color:rgba(202, 244, 247, 1);--axis-w-b0-color:#ffffff;--axis-w-b1-color:#f8f8f8;--axis-w-b2-color:#dddddd;--axis-w-b3-color:#666666;--axis-text-disabled:#bfbfbf;--axis-shadow:0 5px 20px rgba(35, 35, 35, 0.35);--axis-gradient:linear-gradient(
+    .axis-widget-chat-header h2,.axis-widget-ticket-card p span,.axis-widget-ticket-card p strong{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}:root{--axis-w-icon-size:48px;--axis-w-primary-color:#009688;--Brand-Main-super-light:#80cbc3;--Brand-Main-super-dark:#00695c;--axis-w-light-color:rgba(202, 244, 247, 1);--axis-w-b0-color:#ffffff;--axis-w-b1-color:#f8f8f8;--axis-w-b2-color:#dddddd;--axis-w-b3-color:#666666;--axis-text-disabled:#bfbfbf;--axis-shadow:0 5px 20px rgba(35, 35, 35, 0.35);--axis-gradient:linear-gradient(
     135deg,
     rgba(8, 84, 77, 1) 13%,
     rgba(0, 150, 136, 1) 52%,
     rgba(202, 244, 247, 1) 100%
-  );--axis-header-bg:#00695c}#axis-widget-root{position:fixed;right:20px;bottom:20px;z-index:999;display:flex;flex-direction:column;align-items:flex-end;justify-content:flex-end;gap:16px}#axis-widget-float-icon{all:unset;width:var(--axis-w-icon-size);height:var(--axis-w-icon-size);border-radius:50%;background-color:var(--axis-w-primary-color);color:var(--axis-w-b0-color);display:flex;justify-content:center;align-items:center;transition:.1s;cursor:pointer}#axis-widget-float-icon:hover{transform:scale(1.1)}#axis-widget-chat-wrapper{width:400px;max-width:90dvw;border-radius:16px;background-color:var(--axis-w-b0-color);display:none;overflow:hidden;box-shadow:var(--axis-shadow)}#axis-widget-chat-wrapper[data-visible=true]{display:flex;height:500px;flex-direction:column;justify-content:space-between}#axis-widget-chat>footer{display:flex;justify-content:center;gap:32px;padding:16px 32px;background-color:var(--axis-w-b1-color)}#axis-widget-chat>footer>button{all:unset;cursor:pointer;display:flex;align-items:center;gap:8px;flex-direction:column;font-size:12px;transition:.1s}#axis-widget-chat>footer>button:hover,#axis-widget-chat>footer>button[data-enable=true]{color:var(--axis-w-primary-color)}.axis-widget-chat-header-welcome{display:flex;align-items:flex-start;padding:16px;gap:16px;font-size:24px;flex-direction:column;font-weight:700;background:var(--Brand-Main-super-dark);color:var(--axis-w-b0-color)}.axis-widget-chat-header-welcome-flags{width:100%;display:flex;align-items:center;justify-content:center;gap:8px}.axis-widget-chat-header-welcome-flags span{display:flex;align-items:center;gap:4px;font-size:10px;font-weight:400;line-height:150%;letter-spacing:.4px;padding:4px 12px;border-radius:50px;background-color:var(--Brand-Main-super-light);color:#00695c}.axis-widget-chat-header-welcome-flags span:nth-child(2){background-color:#009688;color:var(--axis-w-b0-color)}.axis-widget-chat-actions button:hover,.axis-widget-chat-header button{background-color:var(--Brand-Main-super-light)}.axis-widget-chat-header-welcome-title{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;width:100%;font-size:20px;font-weight:700;line-height:120%}.axis-widget-chat-header-welcome-title span:first-child{font-size:16px;font-weight:400;line-height:150%;letter-spacing:.5px}.axis-widget-chat-header-welcome hr{width:100%;border:1px solid #007969;margin:0}.axis-widget-chat-header-welcome-infos{width:100%;font-size:12px;font-weight:500;line-height:150%;letter-spacing:-.04px;display:flex;flex-direction:column;align-items:center;justify-content:center}.axis-widget-chat-header-welcome-infos small{font-size:12px;font-weight:400;color:var(--axis-text-disabled)}.axis-widget-chat-header{background:var(--axis-header-bg);color:var(--axis-w-b0-color);padding:16px;display:flex;place-items:center;justify-content:space-between;font-size:14px;font-weight:600;gap:8px}.axis-widget-chat-header h2{font-size:14px;font-weight:600}.axis-widget-chat-header div{display:flex;align-items:center;gap:8px;overflow:hidden}.axis-widget-chat-header button{width:20px;height:20px;aspect-ratio:1/1;border-radius:50px;display:flex;align-items:center;justify-content:center;box-sizing:border-box;cursor:pointer}.axis-widget-chat-actions:empty,.axis-widget-chat-header button:disabled{display:none}.axis-widget-chat-header button svg{width:16px;height:16px;color:#1b1b1b}.axis-widget-chat-header-status{background-color:#81d5ff;color:#3b3b3b;font-size:10px;font-weight:400;line-height:150%;letter-spacing:.4px;padding:2px 8px;border-radius:50px}.axis-widget-chat-header-status[data-type=closed]{background-color:var(--axis-w-b3-color);color:var(--axis-text-disabled)}.axis-widget-ticket-list{flex-grow:1;overflow-y:scroll;overflow-x:hidden;display:flex;flex-direction:column;align-items:center;gap:8px;padding:0 8px 16px 16px;font-size:14px}.axis-widget-chat-messages::-webkit-scrollbar,.axis-widget-ticket-list::-webkit-scrollbar{display:block;background:0 0;width:16px}.axis-widget-chat-messages::-webkit-scrollbar-thumb,.axis-widget-ticket-list::-webkit-scrollbar-thumb{border:5px solid transparent;background-clip:padding-box;border-radius:9999px;background-color:var(--axis-w-b2-color)}.axis-widget-ticket-list-message{color:var(--axis-w-b3-color);flex:1;display:flex;align-items:center}.axis-widget-ticket-list-title{font-size:14px;font-weight:600;width:100%;position:sticky;top:0;background:var(--axis-w-b0-color);margin-top:24px;z-index:1;padding:8px 0 4px;box-shadow:0 5px 5px #fff}.axis-widget-ticket-card{all:unset;display:flex;gap:16px;align-items:center;padding:8px 16px;border-radius:8px;font-size:14px;cursor:pointer;background-color:#fafafa;border:1px solid #f2f2f2;width:100%;box-sizing:border-box}.axis-widget-ticket-card p{display:flex;flex-direction:column;align-items:flex-start;width:100%;overflow:hidden}.axis-widget-ticket-card p strong{font-size:14px;font-weight:600;color:#1c1c1c;max-width:100%}.axis-widget-ticket-card p span{opacity:.75;font-size:12px;width:100%;color:#757474}.axis-widget-ticket-card-icon-content{background-color:#009688;padding:3px;aspect-ratio:1/1;border-radius:50px;width:20px;height:20px;display:flex;align-items:center;justify-content:center}.axis-widget-ticket-card-icon-content svg{width:16px;height:16px;color:var(--axis-w-b0-color)}.axis-widget-ticket-card[data-opened=false]{opacity:.5;color:var(--axis-w-b3-color)}.axis-widget-ticket-card[data-opened=false] .axis-widget-ticket-card-icon-content{background-color:var(--axis-text-disabled)}.axis-widget-chat-messages{flex-grow:1;overflow-y:scroll;overflow-x:hidden;display:flex;flex-direction:column;gap:8px;padding:16px 16px 16px 32px}.axis-widget-chat-message,.date-group-header{padding:8px 16px;border-radius:8px;width:fit-content}.axis-widget-chat-messages small{display:flex;justify-content:flex-end;align-items:flex-end;font-size:10px;gap:8px}.axis-widget-chat-messages small svg{width:12px;height:12px;color:var(--axis-w-primary-color);animation:1s linear infinite spin}.date-group{display:flex;flex-direction:column;gap:8px}.axis-widget-chat-message,.axis-widget-chat-message-container{flex-direction:column;display:flex}.date-group-header{background-color:var(--axis-w-b2-color);margin:8px auto 0;font-size:10px}.axis-widget-chat-message{align-self:flex-end;background-color:var(--axis-w-light-color);margin-left:auto}.axis-widget-chat-message strong{align-self:flex-end;font-size:12px;font-weight:500;color:var(--axis-w-primary-color)}.axis-widget-chat-message-container small{display:flex;flex-direction:column;align-items:flex-end;font-size:10px}.axis-widget-chat-message p{font-size:14px;color:var(--axis-w-b3-color)}.axis-widget-chat-message[data-from-user=false]{background-color:var(--axis-w-b2-color);color:var(--axis-w-b3-color);align-self:flex-start;margin-left:0}.axis-widget-chat-message-container[data-from-user=false] small,.axis-widget-chat-message[data-from-user=false] strong{align-self:flex-start;align-items:flex-start}.axis-widget-chat-message-button{display:flex;align-items:flex-start;padding:4px;gap:4px;font-size:14px;background:0 0;color:var(--axis-w-primary-color);border-radius:4px;cursor:pointer}.axis-widget-chat-message-button svg{width:16px;height:16px}.axis-widget-chat-message-button span{color:var(--axis-w-b3-color)}.axis-widget-chat-message-button span svg{animation:1s linear spin}.axis-widget-chat-actions{display:flex;gap:16px;align-items:center;padding:8px 16px;background-color:var(--axis-w-b0-color);border:1px solid var(--axis-w-b2-color);font-size:14px}.axis-widget-chat-actions input{font-size:14px;font-weight:400;line-height:150%;letter-spacing:.4px;box-sizing:border-box;border:none;width:100%}.axis-widget-chat-actions button{padding:8px;border-radius:4px}.axis-widget-chat-actions button:hover svg{color:var(--Brand-Main-super-dark)}.axis-widget-chat-actions-file-button{all:unset;cursor:pointer;display:flex;align-items:center;gap:8px;font-size:14px;border-radius:80px;color:var(--axis-w-b3-color);transition:.1s}.axis-widget-chat-actions-file-button svg{width:16px;height:16px;color:var(--Brand-Main-super-light)}.axis-widget-chat-actions-send-button{all:unset;cursor:pointer;display:flex;align-items:center;color:var(--axis-w-b3-color);transition:.1s}.axis-widget-chat-actions-send-button svg{width:16px;height:16px;color:var(--axis-w-primary-color)}.axis-widget-form{display:flex;flex-direction:column;padding:16px;gap:20px;height:100%}.axis-widget-form label{display:flex;flex-direction:column;gap:4px;width:100%;font-size:10px;position:relative;border:1px solid #b5b5b5;box-sizing:border-box;padding-right:10px}.axis-widget-form label span{position:absolute;padding:0 4px;top:-7px;left:10px;background-color:var(--axis-w-b0-color)}.axis-widget-form input,.axis-widget-form select{border:none;color:#6d6d6d;padding:10px 0 10px 10px}.axis-widget-form-footer{display:flex;align-items:center;justify-content:space-between;gap:20px;width:100%;margin-top:auto}.axis-widget-form-footer button{height:100%;font-size:10px;font-weight:400;line-height:150%;letter-spacing:.4px;background:0 0;cursor:pointer;transition:.3s}.axis-widget-form-footer button[data-type=submit]{display:flex;align-items:center;justify-content:center;gap:16px;padding:8px;background-color:var(--axis-w-primary-color);color:var(--axis-w-b0-color);border-radius:4px;font-size:12px;font-weight:500;line-height:100%;cursor:pointer;margin-left:auto}.axis-widget-form button:disabled{background-color:var(--axis-w-b3-color);cursor:default}@keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+  );--axis-header-bg:#00695c}#axis-widget-root{position:fixed;right:20px;bottom:20px;z-index:999;display:flex;flex-direction:column;align-items:flex-end;justify-content:flex-end;gap:16px}#axis-widget-float-icon{all:unset;width:var(--axis-w-icon-size);height:var(--axis-w-icon-size);border-radius:50%;background-color:var(--axis-w-primary-color);color:var(--axis-w-b0-color);display:flex;justify-content:center;align-items:center;transition:.1s;cursor:pointer}#axis-widget-float-icon:hover{transform:scale(1.1)}#axis-widget-chat-wrapper{width:400px;max-width:90dvw;border-radius:16px;background-color:var(--axis-w-b0-color);display:none;overflow:hidden;box-shadow:var(--axis-shadow)}#axis-widget-chat-wrapper[data-visible=true]{display:flex;height:500px;flex-direction:column;justify-content:space-between}#axis-widget-chat-wrapper[data-bigger=true]{width:700px;height:800px}#axis-widget-chat>footer{display:flex;justify-content:center;gap:32px;padding:16px 32px;background-color:var(--axis-w-b1-color)}#axis-widget-chat>footer>button{all:unset;cursor:pointer;display:flex;align-items:center;gap:8px;flex-direction:column;font-size:12px;transition:.1s}#axis-widget-chat>footer>button:hover,#axis-widget-chat>footer>button[data-enable=true]{color:var(--axis-w-primary-color)}.axis-widget-chat-header-welcome{display:flex;align-items:flex-start;padding:16px;gap:16px;font-size:24px;flex-direction:column;font-weight:700;background:var(--Brand-Main-super-dark);color:var(--axis-w-b0-color)}.axis-widget-chat-header-welcome-flags{width:100%;display:flex;align-items:center;justify-content:center;gap:8px}.axis-widget-chat-header-welcome-flags span{display:flex;align-items:center;gap:4px;font-size:10px;font-weight:400;line-height:150%;letter-spacing:.4px;padding:4px 12px;border-radius:50px;background-color:var(--Brand-Main-super-light);color:#00695c}.axis-widget-chat-header-welcome-flags span:nth-child(2){background-color:#009688;color:var(--axis-w-b0-color)}.axis-widget-chat-actions button:hover,.axis-widget-chat-header button{background-color:var(--Brand-Main-super-light)}.axis-widget-chat-header-welcome-title{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;width:100%;font-size:20px;font-weight:700;line-height:120%}.axis-widget-chat-header-welcome-title span:first-child{font-size:16px;font-weight:400;line-height:150%;letter-spacing:.5px}.axis-widget-chat-header-welcome hr{width:100%;border:1px solid #007969;margin:0}.axis-widget-chat-header-welcome-infos{width:100%;font-size:12px;font-weight:500;line-height:150%;letter-spacing:-.04px;display:flex;flex-direction:column;align-items:center;justify-content:center}.axis-widget-chat-header-welcome-infos small{font-size:12px;font-weight:400;color:var(--axis-text-disabled)}.axis-widget-chat-header,.axis-widget-chat-header h2{font-size:14px;font-weight:600}.axis-widget-chat-header,.axis-widget-chat-header-resize svg{color:var(--axis-w-b0-color)}.axis-widget-chat-header{background:var(--axis-header-bg);padding:16px;display:flex;place-items:center;justify-content:space-between;gap:8px}.axis-widget-chat-header div{display:flex;align-items:center;gap:8px;overflow:hidden}.axis-widget-chat-header button{width:20px;height:20px;aspect-ratio:1/1;border-radius:50px;display:flex;align-items:center;justify-content:center;box-sizing:border-box;cursor:pointer}.axis-widget-chat-actions:empty,.axis-widget-chat-header button:disabled{display:none}.axis-widget-chat-header>button svg{width:16px;height:16px;color:#1b1b1b}.axis-widget-chat-header-resize{background:0 0!important}.axis-widget-chat-header-status{background-color:#81d5ff;color:#3b3b3b;font-size:10px;font-weight:400;line-height:150%;letter-spacing:.4px;padding:2px 8px;border-radius:50px}.axis-widget-chat-header-status[data-type=closed]{background-color:var(--axis-w-b3-color);color:var(--axis-text-disabled)}.axis-widget-ticket-list{flex-grow:1;overflow-y:scroll;overflow-x:hidden;display:flex;flex-direction:column;align-items:center;gap:8px;padding:0 8px 16px 16px;font-size:14px}.axis-widget-chat-messages::-webkit-scrollbar,.axis-widget-ticket-list::-webkit-scrollbar{display:block;background:0 0;width:16px}.axis-widget-chat-messages::-webkit-scrollbar-thumb,.axis-widget-ticket-list::-webkit-scrollbar-thumb{border:5px solid transparent;background-clip:padding-box;border-radius:9999px;background-color:var(--axis-w-b2-color)}.axis-widget-ticket-list-message{color:var(--axis-w-b3-color);flex:1;display:flex;align-items:center}.axis-widget-ticket-list-title{font-size:14px;font-weight:600;width:100%;position:sticky;top:0;background:var(--axis-w-b0-color);margin-top:24px;z-index:1;padding:8px 0 4px;box-shadow:0 5px 5px #fff}.axis-widget-ticket-card{all:unset;display:flex;gap:16px;align-items:center;padding:8px 16px;border-radius:8px;font-size:14px;cursor:pointer;background-color:#fafafa;border:1px solid #f2f2f2;width:100%;box-sizing:border-box}.axis-widget-ticket-card p{display:flex;flex-direction:column;align-items:flex-start;width:100%;overflow:hidden}.axis-widget-ticket-card p strong{font-size:14px;font-weight:600;color:#1c1c1c;max-width:100%}.axis-widget-ticket-card p span{opacity:.75;font-size:12px;width:100%;color:#757474}.axis-widget-ticket-card-icon-content{background-color:#009688;padding:3px;aspect-ratio:1/1;border-radius:50px;width:20px;height:20px;display:flex;align-items:center;justify-content:center}.axis-widget-ticket-card-icon-content svg{width:16px;height:16px;color:var(--axis-w-b0-color)}.axis-widget-ticket-card[data-opened=false]{opacity:.5;color:var(--axis-w-b3-color)}.axis-widget-ticket-card[data-opened=false] .axis-widget-ticket-card-icon-content{background-color:var(--axis-text-disabled)}.axis-widget-chat-messages{flex-grow:1;overflow-y:scroll;overflow-x:hidden;display:flex;flex-direction:column;gap:8px;padding:16px 16px 16px 32px}.axis-widget-chat-message,.date-group-header{padding:8px 16px;border-radius:8px;width:fit-content}.axis-widget-chat-messages small{display:flex;justify-content:flex-end;align-items:flex-end;font-size:10px;gap:8px}.axis-widget-chat-message,.axis-widget-chat-message-container,.date-group{flex-direction:column;display:flex}.axis-widget-chat-messages small svg{width:12px;height:12px;color:var(--axis-w-primary-color);animation:1s linear infinite spin}.date-group{gap:8px}.date-group-header{background-color:var(--axis-w-b2-color);margin:8px auto 0;font-size:10px}.axis-widget-chat-message{align-self:flex-end;background-color:var(--axis-w-light-color);margin-left:auto}.axis-widget-chat-message strong{align-self:flex-end;font-size:12px;font-weight:500;color:var(--axis-w-primary-color)}.axis-widget-chat-message-container small{display:flex;flex-direction:column;align-items:flex-end;font-size:10px}.axis-widget-chat-message p{font-size:14px;color:var(--axis-w-b3-color)}.axis-widget-chat-message[data-from-user=false]{background-color:var(--axis-w-b2-color);color:var(--axis-w-b3-color);align-self:flex-start;margin-left:0}.axis-widget-chat-message-container[data-from-user=false] small,.axis-widget-chat-message[data-from-user=false] strong{align-self:flex-start;align-items:flex-start}.axis-widget-chat-message-button{display:flex;align-items:flex-start;padding:4px;gap:4px;font-size:14px;background:0 0;color:var(--axis-w-primary-color);border-radius:4px;cursor:pointer}.axis-widget-chat-message-button svg{width:16px;height:16px}.axis-widget-chat-message-button span{color:var(--axis-w-b3-color)}.axis-widget-chat-message-button span svg{animation:1s linear spin}.axis-widget-chat-actions{display:flex;gap:16px;align-items:center;padding:8px 16px;background-color:var(--axis-w-b0-color);border:1px solid var(--axis-w-b2-color);font-size:14px}.axis-widget-chat-actions input{font-size:14px;font-weight:400;line-height:150%;letter-spacing:.4px;box-sizing:border-box;border:none;width:100%}.axis-widget-chat-actions button{padding:8px;border-radius:4px}.axis-widget-chat-actions button:hover svg{color:var(--Brand-Main-super-dark)}.axis-widget-chat-actions-file-button{all:unset;cursor:pointer;display:flex;align-items:center;gap:8px;font-size:14px;border-radius:80px;color:var(--axis-w-b3-color);transition:.1s}.axis-widget-chat-actions-file-button svg{width:16px;height:16px;color:var(--Brand-Main-super-light)}.axis-widget-chat-actions-send-button{all:unset;cursor:pointer;display:flex;align-items:center;color:var(--axis-w-b3-color);transition:.1s}.axis-widget-form-footer button,.question-button{font-weight:400;line-height:150%;letter-spacing:.4px;background:0 0;transition:.3s}.axis-widget-chat-actions-send-button svg{width:16px;height:16px;color:var(--axis-w-primary-color)}.axis-widget-form{display:flex;flex-direction:column;padding:16px;gap:20px;height:100%}.axis-widget-form label{display:flex;flex-direction:column;gap:4px;width:100%;font-size:10px;position:relative;border:1px solid #b5b5b5;box-sizing:border-box;padding-right:10px}.axis-widget-form label span{position:absolute;padding:0 4px;top:-7px;left:10px;background-color:var(--axis-w-b0-color)}.axis-widget-form input,.axis-widget-form select{border:none;color:#6d6d6d;padding:10px 0 10px 10px}.axis-widget-form-footer button[data-type=submit],.question-button{display:flex;padding:8px;border-radius:4px;cursor:pointer;color:var(--axis-w-b0-color)}.axis-widget-form-footer{display:flex;align-items:center;justify-content:space-between;gap:20px;width:100%;margin-top:auto}.axis-widget-form-footer button{height:100%;font-size:10px;cursor:pointer}.axis-widget-form-footer button[data-type=submit]{align-items:center;justify-content:center;gap:16px;background-color:var(--axis-w-primary-color);font-size:12px;font-weight:500;line-height:100%;margin-left:auto}.axis-widget-form button:disabled{background-color:var(--axis-w-b3-color);cursor:default}.questions-container{display:flex;flex-direction:column;gap:20px;width:100%}.question-button{align-items:center;justify-content:center;gap:8px;font-size:14px;border:1px solid transparent;background-color:var(--axis-w-primary-color)}.question-button:hover{background-color:var(--axis-header-bg)}@keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
     `
     const style = document.createElement('style')
     style.innerHTML = css
@@ -438,11 +506,13 @@ class AxisWidgetClass {
         userId: this.user.id,
         company: this.user.company,
         origin: this.user.origin,
+        allowedCompanies: [this.user.company],
       }),
     })
       .then(response => response.json())
       .then(state => {
         this.setState(state)
+        this.fetchList()
         localStorage.setItem('user-widget', JSON.stringify(state))
       })
       .catch(error => {
@@ -504,7 +574,7 @@ class AxisWidgetClass {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        params: { origin: this.user.origin },
+        params: { origin: this.user.origin, company: this.user.company },
       }),
     })
       .then(response => response.json())
@@ -555,7 +625,7 @@ class AxisWidgetClass {
   refreshTicketList() {
     const ticketList = document.querySelector('.axis-widget-ticket-list')
 
-    if (this.state.tickets.length > 0)
+    if (this.state.tickets?.length > 0)
       return (ticketList.innerHTML = `
             <strong class="axis-widget-ticket-list-title">Últimos tickets</strong>
             ${this.state.tickets
@@ -580,7 +650,7 @@ class AxisWidgetClass {
     function renderContent() {
       if (this.state.isLoading)
         return '<small class="axis-widget-ticket-list-message">Carregando...</small>'
-      if (this.state.tickets.length > 0)
+      if (this.state.tickets?.length > 0)
         return `
             <strong class="axis-widget-ticket-list-title">Últimos tickets</strong>
             ${this.state.tickets
@@ -685,6 +755,12 @@ class AxisWidgetClass {
     }
   }
 
+  resizeWidget() {
+    const widgetChatWrapper = document.getElementById('axis-widget-chat-wrapper')
+    widgetChatWrapper.setAttribute('data-bigger', !this.state.isBigger)
+    this.state.isBigger = !this.state.isBigger
+  }
+
   NewTicketForm() {
     return `<form class="axis-widget-form">
             <label>
@@ -701,20 +777,19 @@ class AxisWidgetClass {
             </label>
             <label>
                 <span>Assunto</span>
-                <select name="tag" 
-                    onmouseup="_axisWidget.setFormFields({tags: this.value})" 
-                    onchange="_axisWidget.updateNewTicketButton()">
-                    <option value='null'>Selecione um assunto</option>
-                    ${this.state.tags
-                      .map(
-                        tag => `
-                        <option value='${tag}' ${
-                          this.formFields.tags === tag ? 'selected' : ''
-                        }>${tag}</option>
+                <select name="tag"
+                onchange="_axisWidget.setFormFields({tags: this.value}); _axisWidget.updateNewTicketButton();">
+                  <option value='null'>Selecione um assunto</option>
+                  ${this.state.tags
+                    .map(
+                      tag => `
+                      <option value='${tag}' ${
+                        this.formFields.tags === tag ? 'selected' : ''
+                      }>${tag}</option>
                     `
-                      )
-                      .join('')}
-                </select>
+                    )
+                    .join('')}
+                  </select>
             </label>
             
             <footer class="axis-widget-form-footer">
